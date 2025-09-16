@@ -4,7 +4,11 @@ import { create } from "zustand";
 import { persist, subscribeWithSelector } from "zustand/middleware";
 
 import type { UsersPage, NewUserInput } from "@/services/user";
-import { getUsersPage, createUser as apiCreateUser, deleteUser as apiDeleteUser } from "@/services/user";
+import {
+  getUsersPage,
+  createUser as apiCreateUser,
+  deleteUser as apiDeleteUser,
+} from "@/services/user";
 
 export type Gender = "male" | "female" | "non-binary" | "other";
 
@@ -34,9 +38,15 @@ type UsersState = {
   status: Status;
   error: string | null;
   resetUsers: () => void;
-  fetchUsersPage: (args: { q?: string; cursor: number | null; limit?: number; replace?: boolean }) => Promise<void>;
+  fetchUsersPage: (args: {
+    q?: string;
+    cursor: number | null;
+    limit?: number;
+    replace?: boolean;
+  }) => Promise<void>;
   createUser: (input: NewUserInput) => Promise<void>;
   deleteUser: (id: number) => Promise<void>;
+  doNothing: () => void;
 };
 
 export type StoreState = {
@@ -60,7 +70,10 @@ export const useZustandStore = create<StoreState>()(
             }),
           setLimit: (limit) =>
             set((s) => {
-              const next = { ...s.preferences, limit: Math.max(1, Math.min(50, limit)) };
+              const next = {
+                ...s.preferences,
+                limit: Math.max(1, Math.min(50, limit)),
+              };
               savePrefs(next.q, next.limit);
               return { preferences: next };
             }),
@@ -87,15 +100,32 @@ export const useZustandStore = create<StoreState>()(
           status: "idle",
           error: null,
           resetUsers: () =>
-            set((s) => ({ users: { ...s.users, items: [], nextCursor: null, total: 0, status: "idle", error: null } })),
+            set((s) => ({
+              users: {
+                ...s.users,
+                items: [],
+                nextCursor: null,
+                total: 0,
+                status: "idle",
+                error: null,
+              },
+            })),
           fetchUsersPage: async ({ q, cursor, limit, replace }) => {
-            set((s) => ({ users: { ...s.users, status: "loading", error: null } }));
+            set((s) => ({
+              users: { ...s.users, status: "loading", error: null },
+            }));
             try {
-              const page: UsersPage = await getUsersPage({ q, cursor: cursor ?? undefined, limit });
+              const page: UsersPage = await getUsersPage({
+                q,
+                cursor: cursor ?? undefined,
+                limit,
+              });
               set((s) => ({
                 users: {
                   ...s.users,
-                  items: replace ? page.items : mergeById(s.users.items, page.items),
+                  items: replace
+                    ? page.items
+                    : mergeById(s.users.items, page.items),
                   nextCursor: page.nextCursor,
                   total: page.total,
                   status: "succeeded",
@@ -103,7 +133,13 @@ export const useZustandStore = create<StoreState>()(
                 },
               }));
             } catch (e: any) {
-              set((s) => ({ users: { ...s.users, status: "failed", error: e?.message ?? "Unknown error" } }));
+              set((s) => ({
+                users: {
+                  ...s.users,
+                  status: "failed",
+                  error: e?.message ?? "Unknown error",
+                },
+              }));
             }
           },
           createUser: async (input) => {
@@ -119,13 +155,22 @@ export const useZustandStore = create<StoreState>()(
                 },
               }));
             } catch (e: any) {
-              set((s) => ({ users: { ...s.users, status: "failed", error: e?.message ?? "Create failed" } }));
+              set((s) => ({
+                users: {
+                  ...s.users,
+                  status: "failed",
+                  error: e?.message ?? "Create failed",
+                },
+              }));
             }
           },
           deleteUser: async (id: number) => {
             set((s) => ({ users: { ...s.users, status: "loading" } }));
             try {
-              const res = (await apiDeleteUser(id)) as { ok: boolean; removed: User };
+              const res = (await apiDeleteUser(id)) as {
+                ok: boolean;
+                removed: User;
+              };
               if (res?.ok) {
                 set((s) => ({
                   users: {
@@ -139,14 +184,28 @@ export const useZustandStore = create<StoreState>()(
                 throw new Error("Delete failed");
               }
             } catch (e: any) {
-              set((s) => ({ users: { ...s.users, status: "failed", error: e?.message ?? "Delete failed" } }));
+              set((s) => ({
+                users: {
+                  ...s.users,
+                  status: "failed",
+                  error: e?.message ?? "Delete failed",
+                },
+              }));
             }
+          },
+          doNothing: () => {
+            console.log("doNothing");
           },
         },
       }),
       {
         name: "zustand-prefs",
-        partialize: (state) => ({ preferences: { q: state.preferences.q, limit: state.preferences.limit } }),
+        partialize: (state) => ({
+          preferences: {
+            q: state.preferences.q,
+            limit: state.preferences.limit,
+          },
+        }),
         version: 1,
         skipHydration: true,
       }

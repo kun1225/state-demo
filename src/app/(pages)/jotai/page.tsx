@@ -85,6 +85,8 @@ export default function JotaiPage() {
 
   return (
     <div className="grid gap-4 p-2">
+      <Test />
+
       <div className="space-y-1">
         <h1 className="text-xl font-semibold">Jotai Demo</h1>
         <p className="text-sm text-muted-foreground">
@@ -103,7 +105,12 @@ export default function JotaiPage() {
           variant="default"
           onClick={() => {
             setQuery(localQ);
-            fetchUsersPage({ q: localQ || undefined, limit, cursor: null, replace: true });
+            fetchUsersPage({
+              q: localQ || undefined,
+              limit,
+              cursor: null,
+              replace: true,
+            });
           }}
           disabled={status === "loading"}
         >
@@ -118,11 +125,18 @@ export default function JotaiPage() {
           onChange={(e) => {
             const next = Number(e.target.value) || 1;
             setLimit(next);
-            fetchUsersPage({ q: q || undefined, limit: next, cursor: null, replace: true });
+            fetchUsersPage({
+              q: q || undefined,
+              limit: next,
+              cursor: null,
+              replace: true,
+            });
           }}
           className="w-20"
         />
-        <div className="text-xs text-muted-foreground">Applied q: {q || "(none)"}</div>
+        <div className="text-xs text-muted-foreground">
+          Applied q: {q || "(none)"}
+        </div>
       </div>
 
       <form
@@ -149,7 +163,9 @@ export default function JotaiPage() {
         />
         <select
           value={form.gender}
-          onChange={(e) => setForm((s) => ({ ...s, gender: e.target.value as Gender }))}
+          onChange={(e) =>
+            setForm((s) => ({ ...s, gender: e.target.value as Gender }))
+          }
           className="h-9 rounded-md border border-input bg-background px-3 text-sm"
         >
           <option value="male">male</option>
@@ -173,13 +189,20 @@ export default function JotaiPage() {
         {error && <div className="text-red-500">Error: {error}</div>}
         <div>Total: {total}</div>
         <div className="text-muted-foreground">
-          Gender counts: male {genderCounts.male ?? 0}, female {genderCounts.female ?? 0}, nb {genderCounts["non-binary"] ?? 0}, other {genderCounts.other ?? 0}
+          Gender counts: male {genderCounts.male ?? 0}, female{" "}
+          {genderCounts.female ?? 0}, nb {genderCounts["non-binary"] ?? 0},
+          other {genderCounts.other ?? 0}
         </div>
         <Button
           variant="ghost"
           onClick={() => {
             resetUsers();
-            fetchUsersPage({ q: q || undefined, limit, cursor: null, replace: true });
+            fetchUsersPage({
+              q: q || undefined,
+              limit,
+              cursor: null,
+              replace: true,
+            });
           }}
         >
           Reset
@@ -221,11 +244,20 @@ export default function JotaiPage() {
         <Button
           variant="outline"
           onClick={() =>
-            fetchUsersPage({ q: q || undefined, limit, cursor: nextCursor, replace: false })
+            fetchUsersPage({
+              q: q || undefined,
+              limit,
+              cursor: nextCursor,
+              replace: false,
+            })
           }
           disabled={!nextCursor || status === "loading"}
         >
-          {status === "loading" ? "Loading more..." : nextCursor ? "Load more" : "No more"}
+          {status === "loading"
+            ? "Loading more..."
+            : nextCursor
+            ? "Load more"
+            : "No more"}
         </Button>
       </div>
     </div>

@@ -2,7 +2,11 @@
 
 import { atom } from "jotai";
 import type { UsersPage, NewUserInput } from "@/services/user";
-import { getUsersPage, createUser as apiCreateUser, deleteUser as apiDeleteUser } from "@/services/user";
+import {
+  getUsersPage,
+  createUser as apiCreateUser,
+  deleteUser as apiDeleteUser,
+} from "@/services/user";
 
 export type Gender = "male" | "female" | "non-binary" | "other";
 export type User = {
@@ -28,10 +32,14 @@ export const setLimitAtom = atom(null, (_get, set, limit: number) => {
   set(limitAtom, next);
   savePrefsToLS({ limit: next });
 });
-export const hydratePrefsAtom = atom(null, (_get, set, patch: Partial<{ q: string; limit: number }>) => {
-  if (patch.q != null) set(qAtom, patch.q);
-  if (patch.limit != null) set(limitAtom, Math.max(1, Math.min(50, patch.limit)));
-});
+export const hydratePrefsAtom = atom(
+  null,
+  (_get, set, patch: Partial<{ q: string; limit: number }>) => {
+    if (patch.q != null) set(qAtom, patch.q);
+    if (patch.limit != null)
+      set(limitAtom, Math.max(1, Math.min(50, patch.limit)));
+  }
+);
 
 // Users state
 export const usersAtom = atom<User[]>([]);
@@ -52,12 +60,27 @@ export const genderCountsAtom = atom((get) => {
 // Actions
 export const fetchUsersPageAtom = atom(
   null,
-  async (get, set, args: { q?: string; cursor: number | null; limit?: number; replace?: boolean }) => {
+  async (
+    get,
+    set,
+    args: {
+      q?: string;
+      cursor: number | null;
+      limit?: number;
+      replace?: boolean;
+    }
+  ) => {
     set(statusAtom, "loading");
     set(errorAtom, null);
     try {
-      const page: UsersPage = await getUsersPage({ q: args.q, cursor: args.cursor ?? undefined, limit: args.limit });
-      set(usersAtom, (prev) => (args.replace ? page.items : mergeById(prev, page.items)));
+      const page: UsersPage = await getUsersPage({
+        q: args.q,
+        cursor: args.cursor ?? undefined,
+        limit: args.limit,
+      });
+      set(usersAtom, (prev) =>
+        args.replace ? page.items : mergeById(prev, page.items)
+      );
       set(nextCursorAtom, page.nextCursor);
       set(totalAtom, page.total);
       set(statusAtom, "succeeded");
@@ -68,18 +91,21 @@ export const fetchUsersPageAtom = atom(
   }
 );
 
-export const createUserAtom = atom(null, async (_get, set, input: NewUserInput) => {
-  set(statusAtom, "loading");
-  try {
-    const created = (await apiCreateUser(input)) as User;
-    set(usersAtom, (prev) => mergeById(prev, [created]));
-    set(totalAtom, (prev) => prev + 1);
-    set(statusAtom, "succeeded");
-  } catch (e: any) {
-    set(statusAtom, "failed");
-    set(errorAtom, e?.message ?? "Create failed");
+export const createUserAtom = atom(
+  null,
+  async (_get, set, input: NewUserInput) => {
+    set(statusAtom, "loading");
+    try {
+      const created = (await apiCreateUser(input)) as User;
+      set(usersAtom, (prev) => mergeById(prev, [created]));
+      set(totalAtom, (prev) => prev + 1);
+      set(statusAtom, "succeeded");
+    } catch (e: any) {
+      set(statusAtom, "failed");
+      set(errorAtom, e?.message ?? "Create failed");
+    }
   }
-});
+);
 
 export const deleteUserAtom = atom(null, async (_get, set, id: number) => {
   set(statusAtom, "loading");
@@ -101,6 +127,10 @@ export const resetUsersAtom = atom(null, (_get, set) => {
   set(totalAtom, 0);
   set(statusAtom, "idle");
   set(errorAtom, null);
+});
+
+export const doNothingAtom = atom(null, (_get) => {
+  console.log("doNothing");
 });
 
 function mergeById(existing: User[], incoming: User[]): User[] {
