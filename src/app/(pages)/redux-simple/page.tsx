@@ -1,10 +1,10 @@
 "use client";
 
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/redux/hooks";
 
-import { todosActions } from "@/store/todosSlice";
+import { todosActions } from "@/store/redux/todosSlice";
 
-import type { Todo } from "@/store/todosSlice";
+import type { Todo } from "@/store/redux/todosSlice";
 
 export default function ReduxSimplePage() {
   const dispatch = useAppDispatch();

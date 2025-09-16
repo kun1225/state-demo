@@ -11,12 +11,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/redux/hooks";
 import {
   preferencesActions,
   selectLimit,
   selectQuery,
-} from "@/store/preferencesSlice";
+} from "@/store/redux/preferencesSlice";
 import {
   createUser as createUserThunk,
   deleteUser as deleteUserThunk,
@@ -28,8 +28,8 @@ import {
   selectUsersNextCursor,
   selectUsersStatus,
   selectUsersTotal,
-} from "@/store/usersSlice";
-import type { Gender } from "@/store/usersSlice";
+} from "@/store/redux/usersSlice";
+import type { Gender } from "@/store/redux/usersSlice";
 
 export default function ReduxPage() {
   const dispatch = useAppDispatch() as any;
