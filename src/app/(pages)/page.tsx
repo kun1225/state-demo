@@ -6,6 +6,9 @@ export default async function Home() {
       <Link href="/users">Users</Link>
       <Link href="/users-suspense">Users Suspense</Link>
       <Link href="/redux">Redux</Link>
+      <Link href="/redux-simple">Redux Simple</Link>
+      <Link href="/zustand">Zustand</Link>
+      <Link href="/jotai">Jotai</Link>
     </nav>
   );
 }
