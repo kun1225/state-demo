@@ -10,7 +10,7 @@ export default function UsersPage() {
 
   queryClient.prefetchQuery({
     queryKey: ["users"],
-    queryFn: getUsers,
+    queryFn: () => getUsers(),
   });
 
   return (

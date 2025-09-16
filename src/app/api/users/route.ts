@@ -140,10 +140,85 @@ function generateUsers(count: number): User[] {
 
 const users: User[] = generateUsers(100);
 
-export async function GET() {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+export async function GET(request: Request) {
+  // Optional simulated latency
+  await new Promise((resolve) => setTimeout(resolve, 300));
 
-  console.log("users", users);
+  const { searchParams } = new URL(request.url);
+  const q = searchParams.get("q")?.toLowerCase().trim();
+  const limitParam = searchParams.get("limit");
+  const cursorParam = searchParams.get("cursor");
 
-  return NextResponse.json(users);
+  const limit = limitParam ? Math.max(1, Math.min(50, Number(limitParam))) : undefined;
+  const cursor = cursorParam ? Number(cursorParam) : undefined;
+
+  let filtered = q
+    ? users.filter(
+        (u) =>
+          u.name.toLowerCase().includes(q) ||
+          u.email.toLowerCase().includes(q) ||
+          u.title.toLowerCase().includes(q)
+      )
+    : users;
+
+  // If limit or cursor provided, return cursor-based pagination
+  if (typeof limit !== "undefined" || typeof cursor !== "undefined") {
+    const pageSize = limit ?? 20;
+    const sorted = [...filtered].sort((a, b) => a.id - b.id);
+    const startIndex = cursor ? sorted.findIndex((u) => u.id === cursor) + 1 : 0;
+    const items = sorted.slice(startIndex, startIndex + pageSize);
+    const last = items[items.length - 1];
+    const nextCursor = last && startIndex + pageSize < sorted.length ? last.id : null;
+    return NextResponse.json({ items, nextCursor, total: filtered.length });
+  }
+
+  // Default: return full list
+  return NextResponse.json(filtered);
+}
+
+export async function POST(request: Request) {
+  try {
+    const body = (await request.json()) as Partial<User>;
+    const { name, email, gender, title } = body;
+
+    if (!name || !email || !gender || !title) {
+      return NextResponse.json(
+        { message: "name, email, gender, title are required" },
+        { status: 400 }
+      );
+    }
+
+    if (!(["male", "female", "non-binary", "other"] as const).includes(gender as any)) {
+      return NextResponse.json(
+        { message: "invalid gender" },
+        { status: 400 }
+      );
+    }
+
+    const id = users.length ? Math.max(...users.map((u) => u.id)) + 1 : 1;
+    const user: User = { id, name, email, gender: gender as Gender, title };
+    users.push(user);
+
+    return NextResponse.json(user, { status: 201 });
+  } catch (e) {
+    return NextResponse.json({ message: "invalid json" }, { status: 400 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const idParam = searchParams.get("id");
+  const id = idParam ? Number(idParam) : NaN;
+
+  if (!id || Number.isNaN(id)) {
+    return NextResponse.json({ message: "id is required" }, { status: 400 });
+  }
+
+  const idx = users.findIndex((u) => u.id === id);
+  if (idx === -1) {
+    return NextResponse.json({ message: "not found" }, { status: 404 });
+  }
+
+  const [removed] = users.splice(idx, 1);
+  return NextResponse.json({ ok: true, removed });
 }
