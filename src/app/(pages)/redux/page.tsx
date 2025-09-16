@@ -44,14 +44,17 @@ export default function ReduxPage() {
 
   // Local input states
   const [localQ, setLocalQ] = useState("");
-  const [form, setForm] = useState<{ name: string; email: string; gender: Gender; title: string }>(
-    {
-      name: "",
-      email: "",
-      gender: "other",
-      title: "",
-    }
-  );
+  const [form, setForm] = useState<{
+    name: string;
+    email: string;
+    gender: Gender;
+    title: string;
+  }>({
+    name: "",
+    email: "",
+    gender: "other",
+    title: "",
+  });
   const canSubmit = useMemo(
     () => form.name && form.email && form.title && form.gender,
     [form]
@@ -146,7 +149,9 @@ export default function ReduxPage() {
         />
         <select
           value={form.gender}
-          onChange={(e) => setForm((s) => ({ ...s, gender: e.target.value as Gender }))}
+          onChange={(e) =>
+            setForm((s) => ({ ...s, gender: e.target.value as Gender }))
+          }
           className="h-9 rounded-md border border-input bg-background px-3 text-sm"
         >
           <option value="male">male</option>

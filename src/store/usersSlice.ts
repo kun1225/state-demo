@@ -1,5 +1,10 @@
-import { createAsyncThunk, createEntityAdapter, createSelector, createSlice, EntityState } from "@reduxjs/toolkit";
-import type { RootState } from "./redux";
+import {
+  createAsyncThunk,
+  createEntityAdapter,
+  createSelector,
+  createSlice,
+  EntityState,
+} from "@reduxjs/toolkit";
 
 export type Gender = "male" | "female" | "non-binary" | "other";
 
@@ -39,19 +44,16 @@ const initialState: UsersState = usersAdapter.getInitialState({
 export const fetchUsersPage = createAsyncThunk<
   UsersPage,
   { q?: string; cursor: number | null; limit?: number; replace?: boolean }
->(
-  "users/fetchPage",
-  async ({ q, cursor, limit }) => {
-    const sp = new URLSearchParams();
-    if (q) sp.set("q", q);
-    if (typeof limit === "number") sp.set("limit", String(limit));
-    if (cursor) sp.set("cursor", String(cursor));
-    const url = `/api/users${sp.toString() ? `?${sp.toString()}` : ""}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("Failed to fetch users page");
-    return (await res.json()) as UsersPage;
-  }
-);
+>("users/fetchPage", async ({ q, cursor, limit }) => {
+  const sp = new URLSearchParams();
+  if (q) sp.set("q", q);
+  if (typeof limit === "number") sp.set("limit", String(limit));
+  if (cursor) sp.set("cursor", String(cursor));
+  const url = `/api/users${sp.toString() ? `?${sp.toString()}` : ""}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch users page");
+  return (await res.json()) as UsersPage;
+});
 
 export const createUser = createAsyncThunk<
   User,
@@ -66,16 +68,19 @@ export const createUser = createAsyncThunk<
   return (await res.json()) as User;
 });
 
-export const deleteUser = createAsyncThunk<{ ok: boolean; removed: User }, number>(
-  "users/delete",
-  async (id) => {
-    const url = new URL(`/api/users`, typeof window === "undefined" ? "http://localhost" : window.location.origin);
-    url.searchParams.set("id", String(id));
-    const res = await fetch(url.toString(), { method: "DELETE" });
-    if (!res.ok) throw new Error("Failed to delete user");
-    return (await res.json()) as { ok: boolean; removed: User };
-  }
-);
+export const deleteUser = createAsyncThunk<
+  { ok: boolean; removed: User },
+  number
+>("users/delete", async (id) => {
+  const url = new URL(
+    `/api/users`,
+    typeof window === "undefined" ? "http://localhost" : window.location.origin
+  );
+  url.searchParams.set("id", String(id));
+  const res = await fetch(url.toString(), { method: "DELETE" });
+  if (!res.ok) throw new Error("Failed to delete user");
+  return (await res.json()) as { ok: boolean; removed: User };
+});
 
 const usersSlice = createSlice({
   name: "users",
@@ -164,11 +169,8 @@ export const selectUsersNextCursor = (s: any) => s.users.nextCursor;
 
 // Derived selector example: group counts by gender
 export const selectGenderCounts = createSelector(selectAllUsers, (users) => {
-  return users.reduce(
-    (acc, u) => {
-      acc[u.gender] = (acc[u.gender] ?? 0) + 1;
-      return acc;
-    },
-    {} as Record<Gender, number>
-  );
+  return users.reduce((acc, u) => {
+    acc[u.gender] = (acc[u.gender] ?? 0) + 1;
+    return acc;
+  }, {} as Record<Gender, number>);
 });
