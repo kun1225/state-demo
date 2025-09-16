@@ -5,6 +5,7 @@ export default async function Home() {
     <nav className="flex flex-col p-12 gap-4 *:underline">
       <Link href="/users">Users</Link>
       <Link href="/users-suspense">Users Suspense</Link>
+      <Link href="/redux">Redux</Link>
     </nav>
   );
 }
