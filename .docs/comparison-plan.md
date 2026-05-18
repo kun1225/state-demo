@@ -38,14 +38,15 @@ type Status = 'idle' | 'loading' | 'success' | 'error';
 src/app/(pages)/compare/
 ├── _api/                    # 共用 mock fetch helpers
 ├── _types/                  # 共用型別
-├── d0-syntax/
-│   ├── rtk/page.tsx
-│   ├── zustand/page.tsx
-│   └── jotai/page.tsx
-├── d1-async/...
-├── d2-derived/...
-├── d3-rerender/...
-└── d4-cross-slice/...
+├── 1-user/
+│   ├── context/             # React Context 基線
+│   ├── rtk/
+│   ├── zustand/
+│   └── jotai/
+├── 2-async/...
+├── 3-rerender/...
+├── 4-derived/...
+└── 5-cross-slice/...
 ```
 
 每個維度三個 page route 並排，方便：
@@ -54,9 +55,10 @@ src/app/(pages)/compare/
 
 ---
 
-## 維度 0：語法基線
+## 維度 1：語法基線（1-user）
 
-**目的**：感受日常開發樣板量、心智模型差異。
+**目的**：在最單純的情境下，純粹觀察三家的語法與心智模型差異。業務邏輯刻意保持簡單，讓讀者注意力集中在 state 寫法本身。
+加入 React Context 作為「不用任何 lib」的基線對照。
 
 ### 全局狀態
 
@@ -74,23 +76,22 @@ src/app/(pages)/compare/
 | # | 功能 | 觀察點 |
 |---|---|---|
 | 1 | Store / atom 定義 | 初始化樣板量 |
-| 2 | App 啟動時自動 `GET /me` | async action 寫法 |
+| 2 | App 啟動時自動 `GET /api/auth` | async action 寫法 |
 | 3 | Header 元件讀取 `user.name` | selector / hook 用法 |
 | 4 | Sidebar 元件讀取 `preferences.theme` | 細粒度訂閱 |
-| 5 | Settings 表單編輯 profile（樂觀更新 + rollback） | mutation 寫法 |
-| 6 | Theme toggle（light/dark）`PATCH /preferences` | 第二個 mutation |
-| 7 | Logout 清空整個 store | reset 寫法 |
+| 5 | 更新 user name（`PATCH /api/auth`） | mutation 寫法 |
+| 6 | Theme toggle（`PATCH /api/auth/preferences`） | 第二個 mutation |
+| 7 | Logout 清空整個 store（`POST /api/auth/logout`） | reset 寫法 |
 
 ### 產出物：對照表
 
-| 指標 | RTK | Zustand | Jotai |
-|---|---|---|---|
-| 檔案數 | | | |
-| 總行數（不含註解） | | | |
-| `useXxx` hook 數量 | | | |
-| Provider 包裝需求 | `<Provider>` | 無 | 可選 |
-| TS 型別需手寫量 | | | |
-| 樂觀更新樣板行數 | | | |
+| 指標 | Context | RTK | Zustand | Jotai |
+|---|---|---|---|---|
+| 檔案數 | | | | |
+| 總行數（不含註解） | | | | |
+| `useXxx` hook 數量 | | | | |
+| Provider 包裝需求 | `<Provider>` | `<Provider>` | 無 | 可選 |
+| TS 型別需手寫量 | | | | |
 
 ---
 
@@ -217,11 +218,11 @@ type Todo = { id; title; ownerId; lang: 'zh' | 'en' };
 
 | 維度 | route | 量測指標 |
 |---|---|---|
-| 0 | `/compare/d0-syntax/{rtk,zustand,jotai}` | First Load JS |
-| 1 | `/compare/d1-async/{rtk,zustand,jotai}` | First Load JS |
-| 2 | `/compare/d2-derived/{rtk,zustand,jotai}` | First Load JS |
-| 3 | `/compare/d3-rerender/{rtk,zustand,jotai}` | First Load JS |
-| 4 | `/compare/d4-cross-slice/{rtk,zustand,jotai}` | First Load JS |
+| 1 | `/1-user/{context,rtk,zustand,jotai}` | First Load JS |
+| 2 | `/2-async/{rtk,zustand,jotai}` | First Load JS |
+| 3 | `/3-rerender/{rtk,zustand,jotai}` | First Load JS |
+| 4 | `/4-derived/{rtk,zustand,jotai}` | First Load JS |
+| 5 | `/5-cross-slice/{rtk,zustand,jotai}` | First Load JS |
 
 ### 注意事項
 
@@ -243,12 +244,12 @@ type Todo = { id; title; ownerId; lang: 'zh' | 'en' };
 
 ## 執行順序
 
-1. **基礎建設**：mock API + 共用型別 + 目錄結構
-2. **維度 0**（語法基線）→ 跑第一次 bundle 分析
-3. **維度 1**（async）
-4. **維度 3**（re-render）← 跳到 3，因為 3 直觀感受最強
-5. **維度 2**（derived）
-6. **維度 4**（跨 slice）← 複用維度 0 state
+1. ✅ **基礎建設**：API routes + 共用型別 + 目錄結構
+2. **維度 1**（語法基線 `1-user`）→ 跑第一次 bundle 分析
+3. **維度 2**（async `2-async`）
+4. **維度 3**（re-render `3-rerender`）← 直觀感受最強
+5. **維度 4**（derived `4-derived`）
+6. **維度 5**（跨 slice `5-cross-slice`）← 複用維度 1 state
 7. **整理最終報告**：五個維度交叉對照表 + 選型建議
 
 ## 最終產出物
